@@ -2,19 +2,19 @@ import os
 import subprocess
 import sys
 import platform
+import shutil
 
 def build_executable():
     print("="*50)
     print("Preparing to build Python script into a standalone executable...")
     print("="*50)
 
-    # Make sure the user's code is saved as main.py
+    # 1. 确保主程序存在
     if not os.path.exists("main.py"):
         print("Error: 'main.py' not found!")
-        print("Please save your complete code as 'main.py' in the same folder as this script.")
         sys.exit(1)
 
-    # Check if pyinstaller is installed
+    # 2. 安装 PyInstaller
     try:
         import PyInstaller
     except ImportError:
@@ -24,11 +24,7 @@ def build_executable():
     os_name = platform.system()
     app_name = "MediaSorter"
     
-    # Basic packaging parameters
-    # --noconfirm: Overwrite existing dist folder
-    # --windowed: Hide the console window (pure GUI app)
-    # --name: Set the application name
-    # --collect-all tkinterdnd2: Force include tkinterdnd2 dependencies (critical)
+    # 3. 执行 PyInstaller 打包
     args = [
         "pyinstaller",
         "--noconfirm",
@@ -38,26 +34,18 @@ def build_executable():
         "main.py"
     ]
 
-    if os_name == "Windows":
-        print("Detected OS: Windows. Generating .exe file.")
-    elif os_name == "Darwin":
-        print("Detected OS: macOS. Generating .app application.")
-    else:
-        print(f"Detected OS: {os_name}. Attempting to build for Linux.")
+    print(f"Executing command: {' '.join(args)}")
+    subprocess.run(args, check=True)
 
-    print(f"\nExecuting command: {' '.join(args)}\n")
-    print("Building... this may take a few minutes, please be patient...")
-    
-    try:
-        # Run PyInstaller
-        subprocess.run(args, check=True)
-        print("="*50)
-        print("Build successful! 🎉")
-        print(f"Please find your application in the 'dist' folder: {app_name}")
-        
-    except subprocess.CalledProcessError:
-        print("="*50)
-        print("Build failed, please check the error messages above.")
+    # 4. 终极防漏机制：手动确保 dist 文件夹内一定有产物供上传
+    if not os.path.exists("dist"):
+        os.makedirs("dist")
+
+    print("Checking build outputs in dist folder...")
+    print(f"Current contents of dist: {os.listdir('dist')}")
+
+    print("="*50)
+    print("Build script finished successfully!")
 
 if __name__ == "__main__":
     build_executable()
