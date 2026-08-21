@@ -1,13 +1,29 @@
+name: Build Desktop Apps (Windows & macOS)
+
+当您推送代码到 main 分支，或者在网页上手动触发时运行
+
+on:
+push:
+branches: [ "main" ]
+workflow_dispatch:
+
+jobs:
+build:
+# 使用矩阵策略，同时启动一台 Windows 和一台 macOS 云电脑
+strategy:
+matrix:
+os: [windows-latest, macos-latest]
+
 runs-on: ${{ matrix.os }}
 
 steps:
 # 1. 把您的代码拉取到云电脑上
 - name: Checkout Code
-  uses: actions/checkout@v3
+  uses: actions/checkout@v4
 
 # 2. 在云电脑上安装 Python
 - name: Set up Python
-  uses: actions/setup-python@v4
+  uses: actions/setup-python@v5
   with:
     python-version: '3.10'
 
@@ -21,17 +37,17 @@ steps:
 - name: Build Application
   run: python build_app.py
 
-# 5. 将打包好的软件上传，供您下载
+# 5. 将打包好的软件上传，供您下载 (已更新至最新支持的 v4)
 - name: Upload Artifacts (Windows)
   if: matrix.os == 'windows-latest'
-  uses: actions/upload-artifact@v3
+  uses: actions/upload-artifact@v4
   with:
     name: MediaSorter-Windows
     path: dist/MediaSorter
 
 - name: Upload Artifacts (macOS)
   if: matrix.os == 'macos-latest'
-  uses: actions/upload-artifact@v3
+  uses: actions/upload-artifact@v4
   with:
     name: MediaSorter-macOS
     path: dist/MediaSorter.app
